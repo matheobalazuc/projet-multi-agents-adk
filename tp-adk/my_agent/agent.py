@@ -97,9 +97,7 @@ def detecter_intention(message: str) -> str | None:
 
 def extraire_dernier_message_user(llm_request: LlmRequest) -> str:
     """
-    Extrait le VRAI dernier message utilisateur depuis llm_request.contents.
-    On ignore les messages dont le rôle n'est pas 'user' et on s'assure
-    que le texte extrait ne ressemble pas à un prompt système injecté par ADK.
+    Extrait le dernier message utilisateur depuis llm_request.contents.
     """
     for content in reversed(llm_request.contents or []):
         if content.role == "user":

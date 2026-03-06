@@ -75,25 +75,6 @@ Le `before_model_callback` est partagé entre tous les agents. Pour éviter que 
 
 ---
 
-## Installation
-
-
-```bash
-# 1. Cloner le dépôt
-git clone <url-du-repo>
-cd projet-multi-agents-adk
-
-# 2. Créer et activer l'environnement virtuel
-python -m venv .venv
-source .venv/bin/activate   
-
-# 3. Installer les dépendances
-pip install google-adk python-dotenv
-
-# 4. Télécharger le modèle Ollama
-ollama pull mistral
-```
-
 ### Configuration
 
 Créer le fichier `tp-adk/my_agent/.env` :

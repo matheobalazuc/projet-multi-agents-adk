@@ -1,16 +1,16 @@
 {
-  "eval_set_id": "evalset922799",
-  "name": "evalset922799",
+  "eval_set_id": "Test_Planification",
+  "name": "Test_Planification",
   "eval_cases": [
     {
-      "eval_id": "case0fbf66",
+      "eval_id": "case68b0c9",
       "conversation": [
         {
-          "invocation_id": "e-91d6cbc0-6f0d-499d-8d42-635d7612a7ba",
+          "invocation_id": "e-62de102d-2a69-4d06-8b04-172eeb9ab291",
           "user_content": {
             "parts": [
               {
-                "text": "Combien coûte un séjour de 4 nuits à Lisbonne depuis Nice et quelle météo en juillet ?"
+                "text": "Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes."
               }
             ],
             "role": "user"
@@ -18,7 +18,7 @@
           "final_response": {
             "parts": [
               {
-                "text": "Meteo a Lisbonne\n--------------------------------\nCondition    : Pluvieux\nTemperature  : 32 degres C\nHumidite     : 42 pourcent\nVent         : 33 km/h"
+                "text": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros"
               }
             ],
             "role": "model"
@@ -31,9 +31,9 @@
                   "parts": [
                     {
                       "function_call": {
-                        "id": "call_a5b63a0d-4735-4f20-ab5e-1c12d858b226",
+                        "id": "call_96b16ab9-e313-4d7c-b32e-c7523503227d",
                         "args": {
-                          "agent_name": "parallel_info_agent"
+                          "agent_name": "planner_agent"
                         },
                         "name": "transfer_to_agent"
                       }
@@ -48,7 +48,7 @@
                   "parts": [
                     {
                       "function_response": {
-                        "id": "call_a5b63a0d-4735-4f20-ab5e-1c12d858b226",
+                        "id": "call_96b16ab9-e313-4d7c-b32e-c7523503227d",
                         "name": "transfer_to_agent",
                         "response": {
                           "result": null
@@ -61,15 +61,15 @@
               }
             ]
           },
-          "creation_timestamp": 1772805105.248015
+          "creation_timestamp": 1772808172.679543
         }
       ],
       "session_input": {
         "app_name": "my_agent",
         "user_id": "user"
       },
-      "creation_timestamp": 1772808209.443754
+      "creation_timestamp": 1772808398.2532659
     }
   ],
-  "creation_timestamp": 1772808204.671094
+  "creation_timestamp": 1772808395.3383229
 }

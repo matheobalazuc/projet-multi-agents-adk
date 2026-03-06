@@ -59,7 +59,7 @@ Le système repose sur un **agent orchestrateur central** (`travel_assistant`) q
 
 ### Court-circuit des leaf agents via `before_model_callback`
 
-Le modèle local mistral via Ollama a tendance à inventer des noms d'outils ou à reformater les résultats en JSON. Pour garantir des réponses déterministes, le `before_model_callback` intercepte chaque appel LLM des agents leaf et appelle directement la fonction Python correspondante, sans jamais interroger le LLM. Résultat : zéro consommation de tokens pour les agents leaf et formatage réussi.
+Le modèle local mistral via Ollama a tendance à inventer des noms d'outils ou à reformater les résultats en JSON. Pour garantir des réponses déterministes, le `before_model_callback` intercepte chaque appel LLM des agents leaf et appelle directement la fonction Python correspondante.
 
 ### Extraction par règles plutôt que par LLM
 

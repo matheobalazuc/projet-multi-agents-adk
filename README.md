@@ -51,7 +51,7 @@ Le système repose sur un **agent orchestrateur central** (`travel_assistant`) q
 | 5 | Les 2 mécanismes de délégation | `transfer_to_agent` (pour `planner_agent` et `parallel_info_agent`) + `AgentTool` (pour `budget_agent` et `weather_agent` exposés comme outils directs du root) |
 | 6 | Au moins 2 callbacks | `before_model_callback` (court-circuit des leaf agents + filtre anti-hallucination + routage forcé) + `after_model_callback` (neutralisation des function_calls inventés + nettoyage JSON) + `after_agent_callback` (suivi `completed_agents` + assemblage du récapitulatif final) |
 | 7 | Runner programmatique | `main.py` instancie `InMemorySessionService`, crée une session avec état initial, puis `Runner(agent=root_agent, ...)` en boucle interactive |
-| 8 | Démo fonctionnelle | Fonctionne via `python main.py` (terminal) et `adk web` (interface de debug ADK) |
+| 8 | Démo fonctionnelle | Fonctionne via `python main.py` (terminal) et `adk web` (interface web) |
 
 ---
 

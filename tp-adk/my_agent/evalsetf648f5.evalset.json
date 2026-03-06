@@ -1,0 +1,75 @@
+{
+  "eval_set_id": "evalsetf648f5",
+  "name": "evalsetf648f5",
+  "eval_cases": [
+    {
+      "eval_id": "case32a72a",
+      "conversation": [
+        {
+          "invocation_id": "e-98840a36-a4bb-4b59-b6ca-2054bb5b359a",
+          "user_content": {
+            "parts": [
+              {
+                "text": "combien couterait un voyage de 3 nuits a Berlin ?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Le coût estimé de votre voyage à Berlin pour 3 nuits s'élève à 1 010 euros. Ce montant comprend les coûts des vols, des hôtels, des activités et des repas."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "invocation_events": [
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_1572dfaa-b656-4d96-ad15-b74b72f6da00",
+                        "args": {
+                          "request": "Vols + hotel + activites pour une ville nommée Berlin pendant 3 nuits"
+                        },
+                        "name": "budget_agent"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_1572dfaa-b656-4d96-ad15-b74b72f6da00",
+                        "name": "budget_agent",
+                        "response": {
+                          "result": "Budget estime du voyage\n--------------------------------\nVols        : 400 euros\nHotel       : 360 euros (3 nuits)\nActivites   : 100 euros\nRepas       : 150 euros\n--------------------------------\nTotal       : 1010 euros"
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              }
+            ]
+          },
+          "creation_timestamp": 1772792122.307027
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "user"
+      },
+      "creation_timestamp": 1772792225.8027909
+    }
+  ],
+  "creation_timestamp": 1772792173.5980392
+}

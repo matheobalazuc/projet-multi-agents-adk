@@ -274,7 +274,6 @@ def formater_recapitulatif_complet(state: dict, destination: str) -> str:
 
 # ═══════════════════════════════════════════════════════
 # CALLBACKS
-# before_model_callback + after_agent_callback
 # ═══════════════════════════════════════════════════════
 
 def before_llm_callback(

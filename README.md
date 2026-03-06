@@ -142,19 +142,19 @@ Quelle météo à Barcelone en septembre ?
 -> Lance `weather_agent` directement via `AgentTool`
 
 ```
-Il fait combien à Tokyo en janvier ?
+Il fait quel température à Tokyo en janvier ?
 ```
 
 ### Budget
 
 ```
-Quel budget pour 5 nuits ?
+Quel budget pour 5 nuits à Paris ?
 ```
 -> Lance `budget_agent` directement via `AgentTool`
 
 ### Météo + Budget en parallèle
 
 ```
-Combien coûte un séjour à Lisbonne et quelle météo en juillet ?
+Combien coûte un séjour de 4 nuits à Lisbonne depuis Nice et quelle météo en juillet ?
 ```
 -> Lance `parallel_info_agent` (budget + météo simultanément)

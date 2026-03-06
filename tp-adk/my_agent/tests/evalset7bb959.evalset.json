@@ -1,0 +1,75 @@
+{
+  "eval_set_id": "evalset7bb959",
+  "name": "evalset7bb959",
+  "eval_cases": [
+    {
+      "eval_id": "case974354",
+      "conversation": [
+        {
+          "invocation_id": "e-b34182b2-9421-4ac2-91af-de7d28171dd4",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "invocation_events": [
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_18b7c45e-e2f3-4380-a80b-1a6fd1377aba",
+                        "args": {
+                          "agent_name": "planner_agent"
+                        },
+                        "name": "transfer_to_agent"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_18b7c45e-e2f3-4380-a80b-1a6fd1377aba",
+                        "name": "transfer_to_agent",
+                        "response": {
+                          "result": null
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              }
+            ]
+          },
+          "creation_timestamp": 1772805078.713686
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "user"
+      },
+      "creation_timestamp": 1772808140.715164
+    }
+  ],
+  "creation_timestamp": 1772808136.7547278
+}

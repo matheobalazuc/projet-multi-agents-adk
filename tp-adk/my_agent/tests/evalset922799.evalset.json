@@ -1,0 +1,75 @@
+{
+  "eval_set_id": "evalset922799",
+  "name": "evalset922799",
+  "eval_cases": [
+    {
+      "eval_id": "case0fbf66",
+      "conversation": [
+        {
+          "invocation_id": "e-91d6cbc0-6f0d-499d-8d42-635d7612a7ba",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Combien coûte un séjour de 4 nuits à Lisbonne depuis Nice et quelle météo en juillet ?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "Meteo a Lisbonne\n--------------------------------\nCondition    : Pluvieux\nTemperature  : 32 degres C\nHumidite     : 42 pourcent\nVent         : 33 km/h"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "invocation_events": [
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_a5b63a0d-4735-4f20-ab5e-1c12d858b226",
+                        "args": {
+                          "agent_name": "parallel_info_agent"
+                        },
+                        "name": "transfer_to_agent"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "travel_assistant",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_a5b63a0d-4735-4f20-ab5e-1c12d858b226",
+                        "name": "transfer_to_agent",
+                        "response": {
+                          "result": null
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              }
+            ]
+          },
+          "creation_timestamp": 1772805105.248015
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "user"
+      },
+      "creation_timestamp": 1772808209.443754
+    }
+  ],
+  "creation_timestamp": 1772808204.671094
+}

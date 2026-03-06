@@ -1,0 +1,1360 @@
+{
+  "eval_set_result_id": "my_agent_evalset7bb959_1772808145.825805",
+  "eval_set_result_name": "my_agent_evalset7bb959_1772808145.825805",
+  "eval_set_id": "evalset7bb959",
+  "eval_case_results": [
+    {
+      "eval_set_file": "evalset7bb959",
+      "eval_set_id": "evalset7bb959",
+      "eval_id": "case974354",
+      "final_eval_status": 1,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "travel_assistant",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_350e18d8-556a-4fec-827f-5fc68ab209d5",
+                          "args": {
+                            "agent_name": "planner_agent"
+                          },
+                          "name": "transfer_to_agent",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "travel_assistant",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_350e18d8-556a-4fec-827f-5fc68ab209d5",
+                          "name": "transfer_to_agent",
+                          "response": {
+                            "result": null
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                }
+              ]
+            },
+            "creation_timestamp": 1772808145.809957,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "travel_assistant": {
+                  "name": "travel_assistant",
+                  "instructions": "Tu es un assistant de voyage. Tu reponds toujours en francais.\nLes resultats des agents sont deja formates en texte dans le state.\nNe genere pas de JSON. Presente le texte tel quel, sans reformatage.\n\nOutils directs :\n- get_weather_forecast(city, date)\n- calculate_budget(flight_price, hotel_price_per_night, num_nights, activities_budget, daily_food_budget)\n- budget_agent\n- weather_agent\n\nSous-agents via transfer_to_agent :\n- planner_agent       : vols + hotels + activites\n- parallel_info_agent : budget + meteo en parallele\n\nInterdit : flight_agent, hotel_agent, activities_agent, response, format_response, generate_response\n\nRegle 1 - METEO :\nAppelle get_weather_forecast(city=\"...\", date=\"2025-08-01\")\nReponse avec les donnees recues :\n  Meteo a [ville]\n  --------------------------------\n  Condition    : [valeur]\n  Temperature  : [valeur] degres C\n  Humidite     : [valeur] pourcent\n  Vent         : [valeur] km/h\n\nRegle 2 - BUDGET :\nAppelle calculate_budget(flight_price=400.0, hotel_price_per_night=120.0, num_nights=X, activities_budget=100.0, daily_food_budget=50.0)\n\nRegle 3 - PLANIFICATION COMPLETE :\n1. Appelle transfer_to_agent avec name=\"planner_agent\"\n2. Ensuite appelle transfer_to_agent avec name=\"parallel_info_agent\"\n3. Presente le recap complet avec vols, hotels, activites, budget et meteo.\n\nRegle 4 - BUDGET + METEO seulement :\nAppelle transfer_to_agent avec name=\"parallel_info_agent\"\nPresente budget_summary puis weather_info l un apres l autre.\n\nRegle 5 - Infos manquantes : pose une seule question precise.\n\nAPRES CHAQUE APPEL D AGENT : redige ta reponse finale en texte pur. Ne rappelle plus rien.\n\n\nYou are an agent. Your internal name is \"travel_assistant\". The description about you is \"Assistant de voyage principal qui orchestre et synthetise les resultats.\".\n\n\nYou have a list of other agents to transfer to:\n\n\nAgent name: planner_agent\nAgent description: Planifie le voyage complet : vols puis hotels puis activites dans l ordre.\n\n\nAgent name: parallel_info_agent\nAgent description: Recupere budget et meteo en parallele simultanement.\n\n\nIf you are the best to answer the question according to your description,\nyou can answer it.\n\nIf another agent is better for answering the question according to its\ndescription, call `transfer_to_agent` function to transfer the question to that\nagent. When transferring, do not generate any text other than the function\ncall.\n\n**NOTE**: the only available agents for `transfer_to_agent` function are\n`parallel_info_agent`, `planner_agent`.\n\n\nIMPERATIF : appelle d'abord transfer_to_agent avec name='planner_agent'. Attends le résultat. Ensuite appelle transfer_to_agent avec name='parallel_info_agent' pour récupérer budget et météo. Après les deux résultats, rédige ta réponse finale en texte avec le récapitulatif complet.",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Transfer the question to another agent.\n\nThis tool hands off control to another agent when it's more suitable to\nanswer the user's question according to the agent's description.\n\nNote:\n  For most use cases, you should use TransferToAgentTool instead of this\n  function directly. TransferToAgentTool provides additional enum constraints\n  that prevent LLMs from hallucinating invalid agent names.\n\nArgs:\n  agent_name: the agent name to transfer to.\n",
+                          "name": "transfer_to_agent",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "agent_name": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": [
+                                  "planner_agent",
+                                  "parallel_info_agent"
+                                ],
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "agent_name"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "\nGet a simulated weather forecast for a city on a specific date.\n\nArgs:\n    city: City name.\n    date: Date in YYYY-MM-DD format.\n\nReturns:\n    A dict with weather forecast details.\n",
+                          "name": "get_weather_forecast",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "city": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              },
+                              "date": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "city",
+                              "date"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "\nCalculate the total estimated budget for a trip.\n\nArgs:\n    flight_price: Total flight price in EUR.\n    hotel_price_per_night: Hotel price per night in EUR.\n    num_nights: Number of nights of the stay.\n    activities_budget: Budget for activities in EUR (default 0).\n    daily_food_budget: Daily food budget in EUR per person (default 50).\n\nReturns:\n    A dict with a detailed budget breakdown and total.\n",
+                          "name": "calculate_budget",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "flight_price": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "NUMBER"
+                              },
+                              "hotel_price_per_night": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "NUMBER"
+                              },
+                              "num_nights": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "activities_budget": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 0.0,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "NUMBER"
+                              },
+                              "daily_food_budget": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 50.0,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "NUMBER"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "flight_price",
+                              "hotel_price_per_night",
+                              "num_nights"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Calcule le budget total estime d un voyage.",
+                          "name": "budget_agent",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "request": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "request"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Fournit les previsions meteo pour une destination.",
+                          "name": "weather_agent",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "request": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "request"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_maps": null,
+                      "google_search_retrieval": null,
+                      "url_context": null,
+                      "mcp_servers": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "e-b34182b2-9421-4ac2-91af-de7d28171dd4",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "travel_assistant",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_18b7c45e-e2f3-4380-a80b-1a6fd1377aba",
+                          "args": {
+                            "agent_name": "planner_agent"
+                          },
+                          "name": "transfer_to_agent",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "travel_assistant",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_18b7c45e-e2f3-4380-a80b-1a6fd1377aba",
+                          "name": "transfer_to_agent",
+                          "response": {
+                            "result": null
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                }
+              ]
+            },
+            "creation_timestamp": 1772805078.713686,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___e8f81b9c-37d4-4bbf-a895-3c1fd0e310af",
+      "session_details": {
+        "id": "___eval___session___e8f81b9c-37d4-4bbf-a895-3c1fd0e310af",
+        "app_name": "my_agent",
+        "user_id": "user",
+        "state": {
+          "__llm_request_key__": "909ceff9-95ab-41ab-945a-3640976e5ddc",
+          "destination": "Tokyo",
+          "origin": "Paris",
+          "num_nights": 4,
+          "flight_results": "Vols disponibles\n--------------------------------\n- AirFrance : 9.3h de vol  |  454 euros  |  10 places\n- Lufthansa : 6.2h de vol  |  1157 euros  |  37 places\n- Emirates : 5.3h de vol  |  305 euros  |  16 places",
+          "completed_agents": [
+            "flight_agent",
+            "hotel_agent",
+            "activities_agent",
+            "travel_assistant"
+          ],
+          "hotel_results": "Hotels disponibles\n--------------------------------\n- Tokyo Grand Hotel : 5 etoiles  |  225 euros/nuit  |  note 8.5/10\n- Hotel du Centre Tokyo : 5 etoiles  |  65 euros/nuit  |  note 9.4/10\n- Tokyo Budget Inn : 2 etoiles  |  94 euros/nuit  |  note 7.0/10\n- The Tokyo Suite : 4 etoiles  |  99 euros/nuit  |  note 9.2/10",
+          "activities_results": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros"
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "abfcde03-0a9f-4530-94ee-509f39a21423",
+            "timestamp": 1772808143.917932
+          },
+          {
+            "model_version": "ollama/mistral",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": {
+                    "id": "call_350e18d8-556a-4fec-827f-5fc68ab209d5",
+                    "args": {
+                      "agent_name": "planner_agent"
+                    },
+                    "name": "transfer_to_agent",
+                    "partial_args": null,
+                    "will_continue": null
+                  },
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": false,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "5b4fec98-7bf1-4a97-a83e-cfca476e5bd9"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": 0,
+              "candidates_token_count": 26,
+              "candidates_tokens_details": null,
+              "prompt_token_count": 1677,
+              "prompt_tokens_details": null,
+              "thoughts_token_count": null,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1703,
+              "traffic_type": null
+            },
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "travel_assistant",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "5b4fec98-7bf1-4a97-a83e-cfca476e5bd9",
+                "destination": "Tokyo",
+                "origin": "Paris",
+                "num_nights": 4
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": [],
+            "branch": null,
+            "id": "30967870-e7f9-420a-8b55-4121ea3904fd",
+            "timestamp": 1772808143.924636
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": {
+                    "will_continue": null,
+                    "scheduling": null,
+                    "parts": null,
+                    "id": "call_350e18d8-556a-4fec-827f-5fc68ab209d5",
+                    "name": "transfer_to_agent",
+                    "response": {
+                      "result": null
+                    }
+                  },
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "travel_assistant",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": "planner_agent",
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "89ec9aed-4a77-41ee-8ab6-30f0d4c3a1f7",
+            "timestamp": 1772808145.810245
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Vols disponibles\n--------------------------------\n- AirFrance : 9.3h de vol  |  454 euros  |  10 places\n- Lufthansa : 6.2h de vol  |  1157 euros  |  37 places\n- Emirates : 5.3h de vol  |  305 euros  |  16 places",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "flight_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "fc4d2589-8c29-48b7-b6ff-8b8f8fda0a1c",
+                "flight_results": "Vols disponibles\n--------------------------------\n- AirFrance : 9.3h de vol  |  454 euros  |  10 places\n- Lufthansa : 6.2h de vol  |  1157 euros  |  37 places\n- Emirates : 5.3h de vol  |  305 euros  |  16 places"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "807b12cf-de09-4f25-b1de-ce83be12c126",
+            "timestamp": 1772808145.81259
+          },
+          {
+            "model_version": null,
+            "content": null,
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "flight_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "completed_agents": [
+                  "flight_agent"
+                ]
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "27477eb2-23f5-4039-9825-6c854b3d5b11",
+            "timestamp": 1772808145.814429
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hotels disponibles\n--------------------------------\n- Tokyo Grand Hotel : 5 etoiles  |  225 euros/nuit  |  note 8.5/10\n- Hotel du Centre Tokyo : 5 etoiles  |  65 euros/nuit  |  note 9.4/10\n- Tokyo Budget Inn : 2 etoiles  |  94 euros/nuit  |  note 7.0/10\n- The Tokyo Suite : 4 etoiles  |  99 euros/nuit  |  note 9.2/10",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "hotel_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "8e63ddbe-1051-4b6d-a10a-9c749d3dfe8c",
+                "hotel_results": "Hotels disponibles\n--------------------------------\n- Tokyo Grand Hotel : 5 etoiles  |  225 euros/nuit  |  note 8.5/10\n- Hotel du Centre Tokyo : 5 etoiles  |  65 euros/nuit  |  note 9.4/10\n- Tokyo Budget Inn : 2 etoiles  |  94 euros/nuit  |  note 7.0/10\n- The Tokyo Suite : 4 etoiles  |  99 euros/nuit  |  note 9.2/10"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "da58dab9-55da-4b4c-b4a5-299b7771872f",
+            "timestamp": 1772808145.816131
+          },
+          {
+            "model_version": null,
+            "content": null,
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "hotel_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "completed_agents": [
+                  "flight_agent",
+                  "hotel_agent"
+                ]
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "221a4570-3830-4d17-bc25-4136410dc795",
+            "timestamp": 1772808145.817956
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "activities_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "909ceff9-95ab-41ab-945a-3640976e5ddc",
+                "activities_results": "Activites recommandees\n--------------------------------\n- Visite du vieux Tokyo : 2h  |  gratuit\n- Tour gastronomique de Tokyo : 3h  |  45 euros\n- Musée d'histoire de Tokyo : 2h  |  15 euros\n- Randonnée autour de Tokyo : 5h  |  25 euros\n- Cours de cuisine à Tokyo : 3h  |  80 euros"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "21ed81b2-fc0e-4fad-9b75-6f9ab7bc8979",
+            "timestamp": 1772808145.8197
+          },
+          {
+            "model_version": null,
+            "content": null,
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "activities_agent",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "completed_agents": [
+                  "flight_agent",
+                  "hotel_agent",
+                  "activities_agent"
+                ]
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "d946aa9c-0738-41d3-b235-ffca9ef57256",
+            "timestamp": 1772808145.821184
+          },
+          {
+            "model_version": null,
+            "content": null,
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-89faec77-0c17-457f-9a5d-d65393095ec5",
+            "author": "travel_assistant",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "completed_agents": [
+                  "flight_agent",
+                  "hotel_agent",
+                  "activities_agent",
+                  "travel_assistant"
+                ]
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "97a0d1f1-aab3-4bcb-9569-c6afd94e66a3",
+            "timestamp": 1772808145.822109
+          }
+        ],
+        "last_update_time": 1772808145.822109
+      },
+      "user_id": "user"
+    }
+  ],
+  "creation_timestamp": 1772808145.825805
+}

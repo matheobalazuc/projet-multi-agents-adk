@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 async def run_travel_assistant():
-    """Run the travel assistant interactively in the terminal."""
 
     # Initialisation du service de session en mémoire
     session_service = InMemorySessionService()
@@ -24,8 +23,8 @@ async def run_travel_assistant():
         "destination": "",
         "origin": "",
         "travel_dates": "",
-        "passengers": 1,
-        "num_nights": 3,
+        "passengers": "",
+        "num_nights": "",
         "activities_budget": 0.0,
         "completed_agents": [],
     }
@@ -43,7 +42,7 @@ async def run_travel_assistant():
         session_service=session_service,
     )
 
-    print("\n Bienvenue dans votre Assistant de Voyage IA !")
+    print("\n Bienvenue dans votre Assistant de Voyage!")
     print("=" * 55)
     print("Exemples de requêtes :")
     print("  • Je veux aller à Tokyo depuis Paris du 15 au 22 juillet pour 2 personnes.")
@@ -57,7 +56,7 @@ async def run_travel_assistant():
         if not user_input:
             continue
         if user_input.lower() in ("quit", "exit", "q"):
-            print("Au revoir ! Bon voyage ! ✈️")
+            print("Au revoir ! Bon voyage !")
             break
 
         # Construction du message utilisateur

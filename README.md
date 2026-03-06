@@ -97,8 +97,6 @@ python main.py
 adk web
 ```
 
-Pour `adk web`, ouvrir [http://localhost:8000](http://localhost:8000) dans le navigateur et sélectionner `my_agent`.
-
 ---
 
 ## Exemples de requêtes

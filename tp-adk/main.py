@@ -46,9 +46,9 @@ async def run_travel_assistant():
     print("=" * 55)
     print("Exemples de requêtes :")
     print("  - Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.")
-    print("  - Planifie un voyage à Rome depuis Nice pour 3 nuits en août.")
     print("  - Quelle météo à Barcelone en septembre ?")
-    print("  - Combien coûte un séjour à Lisbonne et quelle météo en juillet ?")
+    print("  - Quel budget pour 5 nuits à Paris ?")
+    print("  - Combien coûte un séjour de 4 nuits à Lisbonne depuis Nice et quelle météo en juillet ?")
     print("=" * 55)
     print("Tapez 'quit' pour quitter.\n")
 

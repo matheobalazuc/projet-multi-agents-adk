@@ -38,10 +38,45 @@ OUTILS_AUTORISES = {
     "planner_agent", "parallel_info_agent",
 }
 
-PHRASES_METEO  = ["meteo", "quel temps", "temperature", "climat", "previsions", "weather"]
-PHRASES_BUDGET = ["budget", "combien", "quel prix", "tarif", "cout", "prix total"]
-PHRASES_PLANIF = ["planifie", "organise", "je veux aller", "je voudrais aller",
-                  "partir a", "partir pour", "voyage de", "sejour a", "trip a"]
+PHRASES_METEO = [
+    "meteo","météo",
+    "quel temps","temps a","temps à",
+    "temperature","température",
+    "climat",
+    "previsions","prévisions",
+    "il fait combien",
+    "weather"
+]
+
+PHRASES_BUDGET = [
+    "budget",
+    "combien",
+    "quel prix",
+    "tarif",
+    "cout","coût",
+    "prix total",
+    "combien ca coute","combien ça coûte",
+]
+
+PHRASES_PLANIF = [
+    "planifie","planifier",
+    "organise","organiser",
+    "je veux aller",
+    "je voudrais aller",
+    "je souhaite aller",
+    "partir a","partir à",
+    "partir pour",
+    "voyage a","voyage à",
+    "voyage de",
+    "sejour a","séjour à",
+    "vacances a","vacances à",
+    "trip a","trip à",
+]
+
+MOIS = {
+    "janvier","fevrier","février","mars","avril","mai","juin",
+    "juillet","aout","août","septembre","octobre","novembre","decembre","décembre"
+}
 
 
 # ═══════════════════════════════════════════════════════
@@ -56,52 +91,80 @@ def detecter_intention(message: str) -> str | None:
     if meteo and budget:      return "parallel_info_agent"
     if meteo and not planif:  return "weather_agent"
     if budget and not planif: return "budget_agent"
+    # FIX Bug 3 : planification → on lance planner + parallel_info en séquence
+    # On retourne planner_agent ici ; le root_agent appellera aussi parallel_info_agent
     if planif:                return "planner_agent"
     return None
 
 
 def extraire_dernier_message_user(llm_request: LlmRequest) -> str:
+    """
+    Extrait le VRAI dernier message utilisateur depuis llm_request.contents.
+    On ignore les messages dont le rôle n'est pas 'user' et on s'assure
+    que le texte extrait ne ressemble pas à un prompt système injecté par ADK.
+    """
     for content in reversed(llm_request.contents or []):
         if content.role == "user":
             for part in content.parts or []:
                 if hasattr(part, "text") and part.text:
-                    return part.text
+                    texte = part.text.strip()
+                    # FIX Bug 1 : on ignore les blocs qui commencent par "Context:"
+                    # car ce sont des injections internes d'ADK, pas des messages user
+                    if texte.lower().startswith("context:"):
+                        continue
+                    return texte
     return ""
 
 
-def extraire_ville(texte: str) -> str:
+def extraire_ville(texte: str) -> str | None:
     mots = texte.lower().split()
-    prepositions = {"a", "pour", "vers", "en", "au", "aux", "depuis"}
+    prepositions = {"a", "à", "pour", "vers", "en", "au", "aux"}
+
     for i, mot in enumerate(mots):
         if mot in prepositions and i + 1 < len(mots):
             ville = mots[i + 1].strip(".,?!")
+
+            if ville in MOIS:
+                continue
+
             if len(ville) > 2:
                 return ville.capitalize()
+
     for mot in reversed(mots):
         mot = mot.strip(".,?!")
+
+        if mot in MOIS:
+            continue
+
         if len(mot) > 3 and mot not in prepositions:
             return mot.capitalize()
-    return "Paris"
+
+    return None
 
 
-def extraire_origine(texte: str) -> str:
+def extraire_origine(texte: str) -> str | None:
     mots = texte.lower().split()
+
     for i, mot in enumerate(mots):
         if mot in {"depuis", "de"} and i + 1 < len(mots):
             ville = mots[i + 1].strip(".,?!")
+
             if len(ville) > 2:
                 return ville.capitalize()
-    return "Paris"
+
+    return None
 
 
-def extraire_nuits(texte: str) -> int:
+def extraire_nuits(texte: str) -> int | None:
     match = re.search(r'(\d+)\s*nuits?', texte.lower())
     if match:
         return int(match.group(1))
+
     match = re.search(r'(\d+)\s*jours?', texte.lower())
     if match:
         return max(1, int(match.group(1)) - 1)
-    return 3
+
+    return None
 
 
 # ═══════════════════════════════════════════════════════
@@ -190,6 +253,31 @@ def formater_recapitulatif(state: dict, destination: str) -> str:
     return "\n".join(sections)
 
 
+def formater_recapitulatif_complet(state: dict, destination: str) -> str:
+    """
+    FIX Bug 3 : Recapitulatif complet avec budget ET meteo en plus
+    des vols, hotels et activites quand on planifie un voyage.
+    """
+    sections = [
+        f"Recapitulatif de votre voyage a {destination}",
+        "=" * 40,
+        state.get("flight_results", "Vols : non disponible"),
+        "",
+        state.get("hotel_results", "Hotels : non disponible"),
+        "",
+        state.get("activities_results", "Activites : non disponible"),
+    ]
+
+    # Ajout budget et meteo si disponibles
+    if state.get("budget_summary"):
+        sections += ["", state["budget_summary"]]
+    if state.get("weather_info"):
+        sections += ["", state["weather_info"]]
+
+    sections += ["=" * 40, "Bon voyage !"]
+    return "\n".join(sections)
+
+
 # ═══════════════════════════════════════════════════════
 # CALLBACKS
 # before_model_callback + after_agent_callback
@@ -204,24 +292,54 @@ def before_llm_callback(
     - Log chaque appel LLM
     - Leaf agents : appel direct de l outil, formatage texte, retour LlmResponse
     - Root agent : supprime outils inventes, detecte boucles, injecte routage
+
+    CORRECTIONS :
+    - Bug 1 : extraire_dernier_message_user ignore les blocs "Context:" d'ADK,
+              ce qui evitait que destination = "Context:"
+    - Bug 2 : la detection de boucle se base desormais uniquement sur les
+              appels LLM du TOUR COURANT (depuis le dernier message user),
+              evitant que les appels passes bloquent les nouvelles requetes.
+    - Bug 3 : lors d une planification, on lance aussi parallel_info_agent
+              apres planner_agent pour avoir budget + meteo dans le recap.
     """
     agent_name = callback_context.agent_name
     logger.info(f"[CALLBACK] before_llm -> agent='{agent_name}'")
 
     state = callback_context.state
 
-    # Extrait et stocke destination / origine / nuits si absent du state
+    # FIX BUG 1 (vraie correction) :
+    # Les leaf agents (flight, hotel, activities, budget, weather) reçoivent un message
+    # reconstruit par ADK qui commence par "Context: ..." — PAS le message utilisateur original.
+    # Si on tente d'extraire la ville depuis ce contenu, on obtient "Context" comme destination.
+    #
+    # Règle : seul le root_agent (travel_assistant) extrait et écrit dans le state.
+    # Les leaf agents lisent UNIQUEMENT le state, jamais llm_request.
+    #
+    # On détecte si on est un leaf agent pour ne PAS faire l'extraction.
+    LEAF_AGENTS = {"flight_agent", "hotel_agent", "activities_agent", "budget_agent", "weather_agent"}
+
+    if agent_name not in LEAF_AGENTS:
+        # Extraction uniquement pour le root_agent
+        dernier = extraire_dernier_message_user(llm_request)
+
+        destination_extrait = extraire_ville(dernier) if dernier else None
+        origine_extrait     = extraire_origine(dernier) if dernier else None
+        nuits_extrait       = extraire_nuits(dernier) if dernier else None
+
+        # On écrase uniquement si on a extrait quelque chose de valide
+        if destination_extrait:
+            state["destination"] = destination_extrait
+        if origine_extrait:
+            state["origin"] = origine_extrait
+        if nuits_extrait:
+            state["num_nights"] = nuits_extrait
+
+    # Lecture du state (valeurs déjà correctes pour les leaf agents)
     destination = state.get("destination", "")
     origine     = state.get("origin", "Paris")
-    if not destination:
-        dernier     = extraire_dernier_message_user(llm_request)
-        destination = extraire_ville(dernier)
-        origine     = extraire_origine(dernier)
-        num_nights  = extraire_nuits(dernier)
-        callback_context.state["destination"] = destination
-        callback_context.state["origin"]      = origine
-        callback_context.state["num_nights"]  = num_nights
-        logger.info(f"[STATE] destination={destination} | origine={origine} | nuits={num_nights}")
+    num_nights  = state.get("num_nights", 3)
+
+    logger.info(f"[STATE] destination={destination} | origine={origine} | nuits={num_nights}")
 
     # ── LEAF AGENTS ────────────────────────────────────────────────────────────
 
@@ -264,7 +382,14 @@ def before_llm_callback(
 
     if agent_name == "weather_agent":
         logger.info(f"[CALLBACK] weather_agent : {destination}")
-        data  = get_weather_forecast(city=destination, date="2025-08-01")
+        try:
+            data = get_weather_forecast(city=destination, date="2025-08-01")
+        except Exception as e:
+            logger.error(f"[CALLBACK] weather_agent erreur : {e}")
+            data = {"status": "error"}
+        # data peut être None si l'outil retourne None
+        if not data or not isinstance(data, dict):
+            data = {"status": "error"}
         texte = formater_meteo(data, destination)
         callback_context.state["weather_info"] = texte
         return LlmResponse(content=genai_types.Content(
@@ -285,11 +410,26 @@ def before_llm_callback(
                 filtres.append(tool)
             llm_request.config.tools = filtres
 
-        # Detection boucle : meme outil appele 2 fois -> force sortie texte
+        # FIX Bug 2 : detection de boucle uniquement sur le TOUR COURANT
+        # On compte les appels depuis le dernier message utilisateur,
+        # pas sur l'ensemble de l'historique de la session.
         tool_call_count = 0
         last_tool = None
+        in_current_turn = False
+
         for content in (llm_request.contents or []):
-            if content.role == "model":
+            # Dès qu'on voit le dernier message user, on commence à compter
+            if content.role == "user":
+                # Vérifie si c'est bien le dernier message user (le message courant)
+                for part in content.parts or []:
+                    if hasattr(part, "text") and part.text:
+                        texte_part = part.text.strip()
+                        if not texte_part.lower().startswith("context:"):
+                            in_current_turn = True
+                            tool_call_count = 0  # reset au nouveau tour
+                            last_tool = None
+
+            if in_current_turn and content.role == "model":
                 for part in content.parts or []:
                     if hasattr(part, "function_call") and part.function_call:
                         nom = getattr(part.function_call, "name", "")
@@ -301,7 +441,6 @@ def before_llm_callback(
 
         if tool_call_count >= 2:
             logger.warning(f"[CALLBACK] boucle detectee sur '{last_tool}' -> force reponse finale")
-            # Assemble directement le recapitulatif depuis le state sans repasser par le LLM
             destination = state.get("destination", "votre destination")
             texte_final = formater_recapitulatif(state, destination)
             return LlmResponse(content=genai_types.Content(
@@ -313,10 +452,25 @@ def before_llm_callback(
             cible = detecter_intention(dernier_message)
             if cible and llm_request.config:
                 logger.info(f"[CALLBACK] routage force -> {cible}")
+
+                # FIX Bug 3 : si c'est une planification, on demande au LLM
+                # d'appeler AUSSI parallel_info_agent apres planner_agent
+                if cible == "planner_agent":
+                    extra_instruction = (
+                        f"\n\nIMPERATIF : appelle d'abord transfer_to_agent avec name='planner_agent'."
+                        " Attends le résultat. Ensuite appelle transfer_to_agent avec"
+                        " name='parallel_info_agent' pour récupérer budget et météo."
+                        " Après les deux résultats, rédige ta réponse finale en texte avec le récapitulatif complet."
+                    )
+                else:
+                    extra_instruction = (
+                        f"\n\nIMPERATIF : appelle transfer_to_agent avec name='{cible}'."
+                        " Une seule fois. Apres le resultat, redige ta reponse finale en texte."
+                    )
+
                 llm_request.config.system_instruction = (
                     (llm_request.config.system_instruction or "")
-                    + f"\n\nIMPERATIF : appelle transfer_to_agent avec name='{cible}'."
-                      " Une seule fois. Apres le resultat, redige ta reponse finale en texte."
+                    + extra_instruction
                 )
 
     return None
@@ -329,6 +483,9 @@ def after_agent_callback(
     after_agent callback :
     - Log la fin d execution de chaque agent
     - Met a jour completed_agents dans le state partage (contrainte 4)
+
+    FIX Bug 3 : si planner_agent vient de finir, on assemble un recap complet
+    incluant budget et météo si disponibles dans le state.
     """
     agent_name = callback_context.agent_name
     logger.info(f"[CALLBACK] after_agent -> '{agent_name}' termine.")
@@ -337,6 +494,15 @@ def after_agent_callback(
     if agent_name not in completed:
         completed.append(agent_name)
         state["completed_agents"] = completed
+
+    # FIX Bug 3 : après parallel_info_agent, si planner_agent a déjà tourné,
+    # on met à jour final_travel_plan avec le recap complet
+    if agent_name == "parallel_info_agent" and "planner_agent" in completed:
+        destination = state.get("destination", "votre destination")
+        texte_final = formater_recapitulatif_complet(state, destination)
+        state["final_travel_plan"] = texte_final
+        logger.info("[CALLBACK] recap complet (vols+hotels+activites+budget+meteo) mis a jour dans state")
+
     return None
 
 
@@ -362,7 +528,8 @@ def after_model_callback(
             nom = getattr(part.function_call, "name", "")
             if nom not in OUTILS_AUTORISES:
                 logger.warning(f"[CALLBACK] function_call invente neutralise : '{nom}'")
-                args  = getattr(part.function_call, "args", {})
+                # args peut être None si le LLM n'a pas fourni d'arguments
+                args  = getattr(part.function_call, "args", {}) or {}
                 texte = ""
                 for key in ["text", "content", "response", "message", "result"]:
                     val = args.get(key)
@@ -524,8 +691,6 @@ Sous-agents via transfer_to_agent :
 
 Interdit : flight_agent, hotel_agent, activities_agent, response, format_response, generate_response
 
-Apres UN appel, redige IMMEDIATEMENT ta reponse finale. Tu n appelles plus rien.
-
 Regle 1 - METEO :
 Appelle get_weather_forecast(city="...", date="2025-08-01")
 Reponse avec les donnees recues :
@@ -538,35 +703,19 @@ Reponse avec les donnees recues :
 
 Regle 2 - BUDGET :
 Appelle calculate_budget(flight_price=400.0, hotel_price_per_night=120.0, num_nights=X, activities_budget=100.0, daily_food_budget=50.0)
-Reponse avec les donnees recues :
-  Budget estime du voyage
-  --------------------------------
-  Vols        : [valeur] euros
-  Hotel       : [valeur] euros
-  Activites   : [valeur] euros
-  Repas       : [valeur] euros
-  --------------------------------
-  Total       : [valeur] euros
 
-Regle 3 - PLANIFICATION :
-Appelle transfer_to_agent avec name="planner_agent"
-Quand tu recois les resultats, presente le contenu de flight_results,
-hotel_results et activities_results dans cet ordre :
-  Recapitulatif de votre voyage a [ville]
-  ========================================
-  [flight_results]
+Regle 3 - PLANIFICATION COMPLETE :
+1. Appelle transfer_to_agent avec name="planner_agent"
+2. Ensuite appelle transfer_to_agent avec name="parallel_info_agent"
+3. Presente le recap complet avec vols, hotels, activites, budget et meteo.
 
-  [hotel_results]
-
-  [activities_results]
-  ========================================
-  Bon voyage !
-
-Regle 4 - BUDGET + METEO :
+Regle 4 - BUDGET + METEO seulement :
 Appelle transfer_to_agent avec name="parallel_info_agent"
 Presente budget_summary puis weather_info l un apres l autre.
 
 Regle 5 - Infos manquantes : pose une seule question precise.
+
+APRES CHAQUE APPEL D AGENT : redige ta reponse finale en texte pur. Ne rappelle plus rien.
 """,
     tools=[
         get_weather_forecast,

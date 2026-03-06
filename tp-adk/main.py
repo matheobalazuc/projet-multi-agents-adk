@@ -35,7 +35,7 @@ async def run_travel_assistant():
         state=initial_state,
     )
 
-    # Création du Runner
+    # Création du Runner — une seule fois, réutilisé pour toute la session
     runner = Runner(
         agent=root_agent,
         app_name="travel_assistant",
@@ -45,8 +45,8 @@ async def run_travel_assistant():
     print("\n Bienvenue dans votre Assistant de Voyage!")
     print("=" * 55)
     print("Exemples de requêtes :")
-    print("  • Je veux aller à Tokyo depuis Paris du 15 au 22 juillet pour 2 personnes.")
-    print("  • Planifie un voyage à Rome pour 3 nuits en août.")
+    print("  • Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.")
+    print("  • Planifie un voyage à Rome depuis Nice pour 3 nuits en août.")
     print("  • Quelle météo à Barcelone en septembre ?")
     print("=" * 55)
     print("Tapez 'quit' pour quitter.\n")
@@ -68,18 +68,44 @@ async def run_travel_assistant():
         print("\nAssistant : ", end="", flush=True)
 
         try:
+            # On collecte le texte de tous les events et on n'affiche
+            # que la DERNIERE réponse finale du root_agent (travel_assistant),
+            # car ADK peut émettre plusieurs events intermédiaires.
+            reponses_finales = []
+
             async for event in runner.run_async(
                 user_id="user_001",
                 session_id=session.id,
                 new_message=message,
             ):
-                # Affichage du texte au fur et à mesure
-                if event.content and event.content.parts:
-                    for part in event.content.parts:
-                        if hasattr(part, "text") and part.text:
-                            print(part.text, end="", flush=True)
+                # On ne garde que les events du root_agent avec du texte
+                # is_final_response() indique la réponse définitive de l'agent courant
+                if hasattr(event, "is_final_response") and event.is_final_response():
+                    if event.content and event.content.parts:
+                        texte_event = "".join(
+                            p.text for p in event.content.parts
+                            if hasattr(p, "text") and p.text
+                        )
+                        if texte_event.strip():
+                            reponses_finales.append(texte_event)
+
+            # Affiche uniquement la dernière réponse finale (évite les doublons)
+            if reponses_finales:
+                print(reponses_finales[-1], end="", flush=True)
+            else:
+                # Fallback : streaming classique si aucun event final détecté
+                async for event in runner.run_async(
+                    user_id="user_001",
+                    session_id=session.id,
+                    new_message=message,
+                ):
+                    if event.content and event.content.parts:
+                        for part in event.content.parts:
+                            if hasattr(part, "text") and part.text:
+                                print(part.text, end="", flush=True)
+
         except Exception as e:
-            logger.error(f"Erreur lors de l'exécution : {e}")
+            logger.error(f"Erreur lors de l'exécution : {e}", exc_info=True)
             print(f"\n[Erreur] {e}")
 
         print("\n")

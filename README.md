@@ -1,176 +1,160 @@
-# 🌍 Travel Assistant — Système Multi-Agents ADK
+# Assistant de Voyage Multi-Agents — Google ADK
+## BALAZUC Mathéo
 
-Assistant de voyage intelligent basé sur **Google ADK**, orchestrant plusieurs agents spécialisés pour planifier des voyages complets : vols, hôtels, activités, budget et météo.
-
----
+> Projet réalisé dans le cadre du TP ADK.  
+> Système multi-agents en Python permettant de planifier un voyage complet en langage naturel.
 
 ## Description du projet
 
-Le Travel Assistant est un système multi-agents qui prend en charge la planification complète d'un voyage à partir d'une simple requête en langage naturel. L'utilisateur décrit son voyage (destination, dates, nombre de voyageurs) et le système orchestre automatiquement plusieurs agents spécialisés pour fournir un plan détaillé.
+L'assistant de voyage est un système multi-agents orchestré qui répond à des requêtes concernant la planification de voyages. L'utilisateur peut demander des informations sur les vols, les hôtels, les activités, la météo et le budget pour une destination donnée.
+
+Le système repose sur un **agent orchestrateur central** (`travel_assistant`) qui détecte l'intention de l'utilisateur via une analyse par mots-clés, puis délègue automatiquement les tâches aux agents spécialisés appropriés. Chaque agent leaf est court-circuité via `before_model_callback`, il appelle directement son outil Python sans passer par le LLM, ce qui garantit des réponses claires et rapides même avec un modèle local (Ollama/Mistral).
 
 ---
 
 ## Architecture multi-agents
 
-```mermaid
-graph TD
-    U([👤 Utilisateur]) --> TA
+### Schéma
 
-    TA["🧠 travel_assistant\nLlmAgent — root\n(orchestrateur principal)"]
+![Schéma](Schema_projet.png)
 
-    TA -->|transfer_to_agent| PA
-    TA -->|AgentTool| BA
-    TA -->|AgentTool| WA
-    TA -->|transfer_to_agent| PIA
+### Agents et rôles
 
-    PA["📋 planner_agent\nSequentialAgent\nvols → hôtels → activités"]
+| Agent | Type | Rôle |
+|---|---|---|
+| `travel_assistant` | `LlmAgent` (root) | Orchestrateur central : détecte l'intention, route vers les sous-agents, assemble le récapitulatif final |
+| `planner_agent` | `SequentialAgent` | Exécute en séquence : vols -> hôtels -> activités |
+| `parallel_info_agent` | `ParallelAgent` | Exécute en parallèle : budget + météo simultanément |
+| `flight_agent` | `LlmAgent` (leaf) | Recherche de vols entre deux villes |
+| `hotel_agent` | `LlmAgent` (leaf) | Recherche d'hôtels à destination |
+| `activities_agent` | `LlmAgent` (leaf) | Recherche d'activités touristiques |
+| `budget_agent` | `LlmAgent` (leaf) | Calcul du budget total estimé |
+| `weather_agent` | `LlmAgent` (leaf) | Prévisions météo pour la destination |
 
-    PA --> FA["✈️ flight_agent\nLlmAgent\nsearch_flights"]
-    PA --> HA["🏨 hotel_agent\nLlmAgent\nsearch_hotels"]
-    PA --> AA["🎭 activities_agent\nLlmAgent\nsearch_activities"]
+### Flux de délégation
 
-    PIA["⚡ parallel_info_agent\nParallelAgent\nbudget + météo en parallèle"]
-
-    PIA --> BA2["💶 budget_agent\nLlmAgent\ncalculate_budget"]
-    PIA --> WA2["🌤️ weather_agent\nLlmAgent\nget_weather_forecast"]
-
-    BA["💶 budget_agent\n(via AgentTool)"]
-    WA["🌤️ weather_agent\n(via AgentTool)"]
-```
+- **Planification complète** (`je veux aller à X`) -> `planner_agent` (séquentiel : vol -> hôtel -> activités)
+- **Météo seule** (`quelle météo à X`) -> `weather_agent` via `AgentTool`
+- **Budget seul** (`quel budget pour X nuits`) -> `budget_agent` via `AgentTool`
+- **Météo + Budget** (`combien ça coûte et quelle météo`) -> `parallel_info_agent` (parallèle)
 
 ---
 
-## Contraintes techniques couvertes
+## Contraintes techniques satisfaites
 
 | # | Contrainte | Implémentation |
-|---|-----------|----------------|
-| 1 | ≥ 3 LlmAgent distincts | `flight_agent`, `hotel_agent`, `activities_agent`, `budget_agent`, `weather_agent`, `travel_assistant` |
-| 2 | ≥ 3 tools custom | `search_flights`, `estimate_flight_price`, `search_hotels`, `search_activities`, `calculate_budget`, `get_weather_forecast` |
+|---|---|---|
+| 1 | Minimum 3 agents | 8 agents distincts (`travel_assistant`, `flight_agent`, `hotel_agent`, `activities_agent`, `budget_agent`, `weather_agent`, `planner_agent`, `parallel_info_agent`) |
+| 2 | Au moins 3 tools custom | 6 outils Python dans `my_tools.py` : `search_flights`, `estimate_flight_price`, `search_hotels`, `search_activities`, `calculate_budget`, `get_weather_forecast` |
 | 3 | 2 Workflow Agents différents | `SequentialAgent` (`planner_agent`) + `ParallelAgent` (`parallel_info_agent`) |
-| 4 | State partagé | `output_key` sur chaque agent + variables d'état dans les instructions du `root_agent` |
-| 5 | 2 mécanismes de délégation | `sub_agents` / `transfer_to_agent` → `planner_agent` ; `AgentTool` → `budget_agent`, `weather_agent` |
-| 6 | ≥ 2 callbacks de types différents | `before_model_callback` (`before_llm_callback`) + `after_agent_callback` sur tous les agents |
-| 7 | Runner programmatique | `main.py` avec `Runner` + `InMemorySessionService` + état initial partagé |
-| 8 | Démo fonctionnelle | Fonctionne avec `adk web` et `python main.py` |
+| 4 | State partagé | `InMemorySessionService` avec `output_key` sur chaque agent leaf (`flight_results`, `hotel_results`, `activities_results`, `budget_summary`, `weather_info`, `final_travel_plan`) |
+| 5 | Les 2 mécanismes de délégation | `transfer_to_agent` (pour `planner_agent` et `parallel_info_agent`) + `AgentTool` (pour `budget_agent` et `weather_agent` exposés comme outils directs du root) |
+| 6 | Au moins 2 callbacks | `before_model_callback` (court-circuit des leaf agents + filtre anti-hallucination + routage forcé) + `after_model_callback` (neutralisation des function_calls inventés + nettoyage JSON) + `after_agent_callback` (suivi `completed_agents` + assemblage du récapitulatif final) |
+| 7 | Runner programmatique | `main.py` instancie `InMemorySessionService`, crée une session avec état initial, puis `Runner(agent=root_agent, ...)` en boucle interactive |
+| 8 | Démo fonctionnelle | Fonctionne via `python main.py` (terminal) et `adk web` (interface de debug ADK) |
 
 ---
 
-## Structure du projet
+## Choix techniques
 
-```
-tp-adk/
-├── my_agent/
-│   ├── __init__.py          # from . import agent
-│   ├── agent.py             # Définition de tous les agents (root_agent obligatoire)
-│   ├── tools/
-│   │   └── travel_tools.py  # 6 outils custom Python
-│   └── .env                 # Configuration modèle (ne pas committer)
-├── main.py                  # Runner programmatique
-├── tests/
-│   └── travel_tests.test.json
-├── .gitignore
-└── README.md
-```
+### Court-circuit des leaf agents via `before_model_callback`
+
+Les modèles locaux (Mistral via Ollama) ont tendance à inventer des noms d'outils ou à reformater les résultats en JSON. Pour garantir des réponses déterministes, le `before_model_callback` intercepte chaque appel LLM des agents leaf et appelle directement la fonction Python correspondante, sans jamais interroger le LLM. Résultat : zéro consommation de tokens pour les agents leaf, et formatage garanti.
+
+### Extraction par règles plutôt que par LLM
+
+La destination, l'origine et le nombre de nuits sont extraits du message utilisateur par des fonctions regex/règles (`extraire_ville`, `extraire_origine`, `extraire_nuits`). Ces valeurs alimentent le state partagé de façon fiable, indépendamment de la qualité de compréhension du modèle local.
+
+### Filtre anti-hallucination
+
+Le `after_model_callback` compare chaque `function_call` émis par le LLM contre la liste `OUTILS_AUTORISES`. Les appels inventés (`response`, `format_response`, `budget_summary` utilisé comme outil, etc.) sont neutralisés avant d'atteindre ADK, évitant les erreurs en cascade.
+
+### Séparation root / leaf dans les callbacks
+
+Le `before_model_callback` est partagé entre tous les agents. Pour éviter que les leaf agents réécrasent la destination avec le contenu `"Context: ..."` injecté par ADK, seul le `travel_assistant` (root) extrait depuis `llm_request`. Les leaf agents lisent uniquement le state.
 
 ---
 
 ## Installation
 
-### Pré-requis
-
-- Python 3.10+
-- [Ollama](https://ollama.com) installé localement
-- VS Code recommandé
-
-### Étapes
 
 ```bash
-# 1. Cloner le projet
+# 1. Cloner le dépôt
 git clone <url-du-repo>
 cd projet-multi-agents-adk
 
 # 2. Créer et activer l'environnement virtuel
 python -m venv .venv
-source .venv/bin/activate        # Mac / Linux
-# .venv\Scripts\activate.bat     # Windows CMD
-# .venv\Scripts\Activate.ps1     # Windows PowerShell
+source .venv/bin/activate   
 
-# 3. Installer Google ADK
-pip install google-adk
+# 3. Installer les dépendances
+pip install google-adk python-dotenv
 
-# 4. Installer Ollama et le modèle
-curl -fsSL https://ollama.com/install.sh | sh   # Mac/Linux
-ollama pull mistral                              # Télécharger le modèle
+# 4. Télécharger le modèle Ollama
+ollama pull mistral
+```
 
-# 5. Configurer le fichier .env
-# my_agent/.env :
+### Configuration
+
+Créer le fichier `tp-adk/my_agent/.env` :
+
+```env
 ADK_MODEL_PROVIDER=ollama
 ADK_MODEL_NAME=ollama/mistral
 ```
-
-> ⚠️ Ne jamais committer le fichier `.env` — il est dans le `.gitignore`.
-
 ---
 
 ## Lancement
 
-### Interface web (recommandé pour la démo)
-
-```bash
-cd /chemin/vers/projet-multi-agents-adk
-adk web tp-adk
-```
-
-Puis ouvrir [http://127.0.0.1:8000](http://127.0.0.1:8000) dans le navigateur.
-
-### Terminal interactif
-
 ```bash
 cd tp-adk
+
+# Mode terminal
 python main.py
+
+# Mode interface web ADK
+adk web
 ```
+
+Pour `adk web`, ouvrir [http://localhost:8000](http://localhost:8000) dans le navigateur et sélectionner `my_agent`.
 
 ---
 
-## Exemples de requêtes pour tester le système
+## Exemples de requêtes
 
 ### Planification complète
-```
-Je veux aller à Tokyo depuis Paris du 15 au 22 juillet pour 2 personnes.
-```
-→ Active le `planner_agent` (SequentialAgent) : vols → hôtels → activités
 
 ```
-Planifie un voyage à Rome pour 3 nuits en août.
+Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.
 ```
-→ Idem, avec extraction automatique des paramètres
+-> Lance `planner_agent` (vols -> hôtels -> activités en séquence)
 
-### Météo uniquement
+```
+Planifie un voyage à Rome depuis Nice pour 3 nuits en août.
+```
+-> Lance `planner_agent` avec extraction automatique de l'origine, la destination et la durée
+
+### Météo
+
 ```
 Quelle météo à Barcelone en septembre ?
 ```
-→ Active le `weather_agent` via `AgentTool`
+-> Lance `weather_agent` directement via `AgentTool`
 
-### Budget uniquement
 ```
-Quel serait le budget pour 5 nuits à Amsterdam ?
+Il fait combien à Tokyo en janvier ?
 ```
-→ Active le `budget_agent` via `AgentTool`
 
-### Infos en parallèle
+### Budget
+
 ```
-Donne-moi le budget et la météo pour un voyage à Lisbonne en juillet.
+Quel budget pour 5 nuits ?
 ```
-→ Active le `parallel_info_agent` (ParallelAgent) : budget + météo simultanément
+-> Lance `budget_agent` directement via `AgentTool`
 
----
+### Météo + Budget en parallèle
 
-## Modèles Ollama compatibles
-
-| Modèle | RAM min. | Recommandé pour |
-|--------|----------|-----------------|
-| `gemma2:2b` | 4 Go | Tests rapides / vieux laptops |
-| `llama3.2` | 4 Go | Équilibre vitesse/qualité |
-| `mistral` | 8 Go | Meilleure qualité (recommandé) |
-
-Pour changer de modèle, modifier `my_agent/.env` et remplacer `ollama/mistral` par le modèle souhaité.
+```
+Combien coûte un séjour à Lisbonne et quelle météo en juillet ?
+```
+-> Lance `parallel_info_agent` (budget + météo simultanément)

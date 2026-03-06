@@ -18,7 +18,7 @@ async def run_travel_assistant():
     # Initialisation du service de session en mémoire
     session_service = InMemorySessionService()
 
-    # Création d'une session avec l'état initial partagé (contrainte 4 : state partagé)
+    # Création d'une session avec l'état initial partagé
     initial_state = {
         "destination": "",
         "origin": "",
@@ -35,7 +35,7 @@ async def run_travel_assistant():
         state=initial_state,
     )
 
-    # Création du Runner — une seule fois, réutilisé pour toute la session
+    # Création du Runner
     runner = Runner(
         agent=root_agent,
         app_name="travel_assistant",
@@ -45,9 +45,10 @@ async def run_travel_assistant():
     print("\n Bienvenue dans votre Assistant de Voyage!")
     print("=" * 55)
     print("Exemples de requêtes :")
-    print("  • Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.")
-    print("  • Planifie un voyage à Rome depuis Nice pour 3 nuits en août.")
-    print("  • Quelle météo à Barcelone en septembre ?")
+    print("  - Je veux aller 4 nuits à Tokyo depuis Paris pour 2 personnes.")
+    print("  - Planifie un voyage à Rome depuis Nice pour 3 nuits en août.")
+    print("  - Quelle météo à Barcelone en septembre ?")
+    print("  - Combien coûte un séjour à Lisbonne et quelle météo en juillet ?")
     print("=" * 55)
     print("Tapez 'quit' pour quitter.\n")
 
@@ -69,8 +70,6 @@ async def run_travel_assistant():
 
         try:
             # On collecte le texte de tous les events et on n'affiche
-            # que la DERNIERE réponse finale du root_agent (travel_assistant),
-            # car ADK peut émettre plusieurs events intermédiaires.
             reponses_finales = []
 
             async for event in runner.run_async(

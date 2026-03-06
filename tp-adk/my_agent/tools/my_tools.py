@@ -1,7 +1,3 @@
-"""
-Custom tools for the travel assistant multi-agent system.
-"""
-
 from typing import Optional
 import random
 

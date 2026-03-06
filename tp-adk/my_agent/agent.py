@@ -91,8 +91,6 @@ def detecter_intention(message: str) -> str | None:
     if meteo and budget:      return "parallel_info_agent"
     if meteo and not planif:  return "weather_agent"
     if budget and not planif: return "budget_agent"
-    # FIX Bug 3 : planification → on lance planner + parallel_info en séquence
-    # On retourne planner_agent ici ; le root_agent appellera aussi parallel_info_agent
     if planif:                return "planner_agent"
     return None
 
@@ -108,8 +106,6 @@ def extraire_dernier_message_user(llm_request: LlmRequest) -> str:
             for part in content.parts or []:
                 if hasattr(part, "text") and part.text:
                     texte = part.text.strip()
-                    # FIX Bug 1 : on ignore les blocs qui commencent par "Context:"
-                    # car ce sont des injections internes d'ADK, pas des messages user
                     if texte.lower().startswith("context:"):
                         continue
                     return texte
@@ -268,7 +264,7 @@ def formater_recapitulatif_complet(state: dict, destination: str) -> str:
         state.get("activities_results", "Activites : non disponible"),
     ]
 
-    # Ajout budget et meteo si disponibles
+    # Ajout budget et meteo
     if state.get("budget_summary"):
         sections += ["", state["budget_summary"]]
     if state.get("weather_info"):
@@ -293,29 +289,12 @@ def before_llm_callback(
     - Leaf agents : appel direct de l outil, formatage texte, retour LlmResponse
     - Root agent : supprime outils inventes, detecte boucles, injecte routage
 
-    CORRECTIONS :
-    - Bug 1 : extraire_dernier_message_user ignore les blocs "Context:" d'ADK,
-              ce qui evitait que destination = "Context:"
-    - Bug 2 : la detection de boucle se base desormais uniquement sur les
-              appels LLM du TOUR COURANT (depuis le dernier message user),
-              evitant que les appels passes bloquent les nouvelles requetes.
-    - Bug 3 : lors d une planification, on lance aussi parallel_info_agent
-              apres planner_agent pour avoir budget + meteo dans le recap.
     """
     agent_name = callback_context.agent_name
     logger.info(f"[CALLBACK] before_llm -> agent='{agent_name}'")
 
     state = callback_context.state
 
-    # FIX BUG 1 (vraie correction) :
-    # Les leaf agents (flight, hotel, activities, budget, weather) reçoivent un message
-    # reconstruit par ADK qui commence par "Context: ..." — PAS le message utilisateur original.
-    # Si on tente d'extraire la ville depuis ce contenu, on obtient "Context" comme destination.
-    #
-    # Règle : seul le root_agent (travel_assistant) extrait et écrit dans le state.
-    # Les leaf agents lisent UNIQUEMENT le state, jamais llm_request.
-    #
-    # On détecte si on est un leaf agent pour ne PAS faire l'extraction.
     LEAF_AGENTS = {"flight_agent", "hotel_agent", "activities_agent", "budget_agent", "weather_agent"}
 
     if agent_name not in LEAF_AGENTS:
@@ -410,9 +389,8 @@ def before_llm_callback(
                 filtres.append(tool)
             llm_request.config.tools = filtres
 
-        # FIX Bug 2 : detection de boucle uniquement sur le TOUR COURANT
+        # Detection de boucle uniquement sur le TOUR COURANT
         # On compte les appels depuis le dernier message utilisateur,
-        # pas sur l'ensemble de l'historique de la session.
         tool_call_count = 0
         last_tool = None
         in_current_turn = False
@@ -453,8 +431,6 @@ def before_llm_callback(
             if cible and llm_request.config:
                 logger.info(f"[CALLBACK] routage force -> {cible}")
 
-                # FIX Bug 3 : si c'est une planification, on demande au LLM
-                # d'appeler AUSSI parallel_info_agent apres planner_agent
                 if cible == "planner_agent":
                     extra_instruction = (
                         f"\n\nIMPERATIF : appelle d'abord transfer_to_agent avec name='planner_agent'."
@@ -482,10 +458,7 @@ def after_agent_callback(
     """
     after_agent callback :
     - Log la fin d execution de chaque agent
-    - Met a jour completed_agents dans le state partage (contrainte 4)
-
-    FIX Bug 3 : si planner_agent vient de finir, on assemble un recap complet
-    incluant budget et météo si disponibles dans le state.
+    - Met a jour completed_agents dans le state partage
     """
     agent_name = callback_context.agent_name
     logger.info(f"[CALLBACK] after_agent -> '{agent_name}' termine.")
@@ -495,8 +468,6 @@ def after_agent_callback(
         completed.append(agent_name)
         state["completed_agents"] = completed
 
-    # FIX Bug 3 : après parallel_info_agent, si planner_agent a déjà tourné,
-    # on met à jour final_travel_plan avec le recap complet
     if agent_name == "parallel_info_agent" and "planner_agent" in completed:
         destination = state.get("destination", "votre destination")
         texte_final = formater_recapitulatif_complet(state, destination)

@@ -28,7 +28,6 @@ def search_flights(
         if not origin or not destination or not date:
             return {"error": "origin, destination and date are required."}
 
-        # Simulated flight data
         airlines = ["AirFrance", "Lufthansa", "Emirates", "Japan Airlines"]
         flights = []
         for i, airline in enumerate(airlines[:3]):
@@ -63,7 +62,6 @@ def estimate_flight_price(origin: str, destination: str) -> dict:
         Dict avec prix minimum et maximum estimés en EUR.
     """
     try:
-        import random
         base = random.randint(150, 800)
         return {
             "status": "success",
@@ -159,11 +157,11 @@ def search_activities(
             return {"error": "city is required."}
 
         all_activities = [
-            {"name": f"Visit {city} Old Town", "category": "sightseeing", "price_eur": 0, "duration_hours": 2},
-            {"name": f"{city} Food Tour", "category": "food", "price_eur": 45, "duration_hours": 3},
-            {"name": f"{city} Museum of History", "category": "museum", "price_eur": 15, "duration_hours": 2},
-            {"name": f"Hiking around {city}", "category": "outdoor", "price_eur": 25, "duration_hours": 5},
-            {"name": f"{city} Cooking Class", "category": "food", "price_eur": 80, "duration_hours": 3},
+            {"name": f"Visite du vieux {city}", "category": "sightseeing", "price_eur": 0, "duration_hours": 2},
+            {"name": f"Tour gastronomique de {city}", "category": "food", "price_eur": 45, "duration_hours": 3},
+            {"name": f"Musée d'histoire de {city}", "category": "museum", "price_eur": 15, "duration_hours": 2},
+            {"name": f"Randonnée autour de {city}", "category": "outdoor", "price_eur": 25, "duration_hours": 5},
+            {"name": f"Cours de cuisine à {city}", "category": "food", "price_eur": 80, "duration_hours": 3},
         ]
 
         if category:
@@ -247,7 +245,7 @@ def get_weather_forecast(
         if not city or not date:
             return {"error": "city and date are required."}
 
-        conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Rainy", "Windy"]
+        conditions = ["Ensoleillé", "Partiellement nuageux", "Nuageux", "Pluvieux", "Venteux"]
         return {
             "status": "success",
             "city": city,
